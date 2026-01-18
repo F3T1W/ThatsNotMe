@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThatsNotMe - Face Swap Trainer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h4 class="m-0 text-white">
+            <i class="bi bi-person-bounding-box me-2"></i> ThatsNotMe
+        </h4>
+    </div>
+    <nav class="nav flex-column">
+        <a class="nav-link active" data-page="home">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+        </a>
+        <a class="nav-link" data-page="training-dataset">
+            <i class="bi bi-images"></i>
+            <span>Training Dataset</span>
+        </a>
+        <a class="nav-link" data-page="train-model">
+            <i class="bi bi-cpu"></i>
+            <span>Train Model</span>
+        </a>
+        <a class="nav-link" data-page="test-dataset">
+            <i class="bi bi-folder2-open"></i>
+            <span>Test Dataset</span>
+        </a>
+        <a class="nav-link" data-page="face-swap">
+            <i class="bi bi-arrow-repeat"></i>
+            <span>Face Swap</span>
+        </a>
+        <a class="nav-link" data-page="settings">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <!-- Home Page -->
+    <div id="page-home" class="page-content fade-in">
+        <h2 class="mb-4">Dashboard</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Training Images</h5>
+                        <p class="card-text display-4" id="stat-training-count">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Models Trained</h5>
+                        <p class="card-text display-4" id="stat-models-count">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Dataset Page -->
+    <div id="page-training-dataset" class="page-content d-none fade-in">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Training Dataset</h5>
+                <button id="btn-select-training" class="btn btn-primary">
+                    <i class="bi bi-folder-plus"></i> Select Training Images
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Upload at least 10-20 photos of the same person.
+                </div>
+                <div id="training-preview" class="row g-3">
+                    <!-- Images will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other pages placeholders -->
+    <div id="page-train-model" class="page-content d-none fade-in">
+        <h2>Train Model (Coming Soon)</h2>
+    </div>
+    <div id="page-test-dataset" class="page-content d-none fade-in">
+        <h2>Test Dataset (Coming Soon)</h2>
+    </div>
+    <div id="page-face-swap" class="page-content d-none fade-in">
+        <h2>Face Swap (Coming Soon)</h2>
+    </div>
+    <div id="page-settings" class="page-content d-none fade-in">
+        <h2>Settings (Coming Soon)</h2>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./main.js"></script>
+</body>
+</html>

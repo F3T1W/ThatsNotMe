@@ -1,0 +1,55 @@
+{
+  "name": "thats-not-me",
+  "productName": "ThatsNotMe",
+  "version": "0.0.1",
+  "description": "Face Swap Training Application",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "author": "f3t1w",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "bootstrap": "^5.3.2",
+    "bootstrap-icons": "^1.11.1",
+    "electron-updater": "^6.1.7",
+    "fs-extra": "^11.2.0",
+    "winston": "^3.11.0"
+  },
+  "build": {
+    "appId": "com.f3t1w.thatsnotme",
+    "productName": "ThatsNotMe",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "python/**/*",
+      "package.json"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "f3t1w",
+      "repo": "ThatsNotMe",
+      "private": false,
+      "releaseType": "release"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Development"
+    }
+  }
+}

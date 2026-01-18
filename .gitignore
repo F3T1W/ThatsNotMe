@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+dist/
+release/
+npm-debug.log
+yarn-error.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+python/venv/
+*.spec
+
+# Application Data
+datasets/
+models/
+logs/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo

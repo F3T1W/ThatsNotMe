@@ -1,0 +1,134 @@
+:root {
+    --sidebar-width: 280px;
+    --primary-color: #dc3545;
+    --dark-bg: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --sidebar-bg: #0f0f0f;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    padding-top: 20px;
+    border-right: 1px solid #333;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 0 20px 20px 20px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 20px;
+}
+
+.nav-link {
+    color: #aaa;
+    padding: 12px 20px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+    color: #fff;
+    border-left-color: var(--primary-color);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.nav-link i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 30px;
+    min-height: 100vh;
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+}
+
+.card-title, .card-text, .card-header {
+    color: #ffffff;
+}
+
+.card-header {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid #333;
+    padding: 15px 20px;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Forms */
+.form-control {
+    background-color: #2b2b2b;
+    border: 1px solid #444;
+    color: #fff;
+}
+
+.form-control:focus {
+    background-color: #2b2b2b;
+    border-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.form-label {
+    color: #ccc;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Utils */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.img-thumbnail {
+    background-color: #2b2b2b;
+    border-color: #444;
+}
