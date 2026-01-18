@@ -10,6 +10,7 @@ class DatasetModule {
     constructor() {
         this.previewContainer = document.getElementById('training-preview');
         this.selectBtn = document.getElementById('btn-select-training');
+        this.resetBtn = document.getElementById('btn-reset-dataset');
         this.countDisplay = document.getElementById('stat-training-count');
         
         this.init();
@@ -22,7 +23,32 @@ class DatasetModule {
         if (this.selectBtn) {
             this.selectBtn.addEventListener('click', () => this.handleSelection());
         }
+        if (this.resetBtn) {
+            this.resetBtn.addEventListener('click', () => this.handleReset());
+        }
         this.loadExistingImages();
+    }
+
+    /**
+     * Handles reset dataset button click.
+     */
+    async handleReset() {
+        if (!confirm('Are you sure you want to delete all training images? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const result = await ipcRenderer.invoke('clear-training-dataset');
+            if (result.success) {
+                notifications.show('Dataset cleared successfully', 'success');
+                await this.loadExistingImages();
+            } else {
+                notifications.show(`Error clearing dataset: ${result.error}`, 'danger');
+            }
+        } catch (error) {
+            logger.error('Error clearing dataset', error);
+            notifications.show('Failed to clear dataset', 'danger');
+        }
     }
 
     /**

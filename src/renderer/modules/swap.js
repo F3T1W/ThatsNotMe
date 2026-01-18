@@ -50,6 +50,17 @@ class SwapModule {
                                 </div>
                             </div>
                             
+                            <!-- Enhancement Options -->
+                            <div class="mb-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="check-enhance">
+                                    <label class="form-check-label text-white" for="check-enhance">
+                                        Enhance Face Quality (Slower)
+                                    </label>
+                                </div>
+                                <div class="form-text text-white-50">Uses GFPGAN to restore details and fix blurriness. Requires downloading additional model (~300MB).</div>
+                            </div>
+                            
                             <!-- Action -->
                             <div class="d-grid mt-5">
                                 <button class="btn btn-primary btn-lg py-3" id="btn-start-swap" disabled>
@@ -160,6 +171,7 @@ class SwapModule {
     async handleSwap() {
         const btn = document.getElementById('btn-start-swap');
         const status = document.getElementById('swap-status');
+        const enhanceCheck = document.getElementById('check-enhance');
         
         try {
             btn.disabled = true;
@@ -167,7 +179,8 @@ class SwapModule {
             
             const result = await ipcRenderer.invoke('start-face-swap', {
                 modelPath: this.selectedModelPath,
-                targetPath: this.selectedTargetImage
+                targetPath: this.selectedTargetImage,
+                enhance: enhanceCheck ? enhanceCheck.checked : false
             });
 
             if (result.success) {

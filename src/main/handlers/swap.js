@@ -29,9 +29,10 @@ function registerSwapHandlers(ipcMain) {
    * @param {Object} params - Swap parameters.
    * @param {string} params.modelPath - Path to the .fsem model file.
    * @param {string} params.targetPath - Path to the target image.
+   * @param {boolean} params.enhance - Whether to enhance the face.
    */
-  ipcMain.handle('start-face-swap', async (event, { modelPath, targetPath }) => {
-    logger.info('Starting face swap', { modelPath, targetPath });
+  ipcMain.handle('start-face-swap', async (event, { modelPath, targetPath, enhance }) => {
+    logger.info('Starting face swap', { modelPath, targetPath, enhance });
     
     return new Promise((resolve, reject) => {
         const pythonPath = pythonEnv.getPythonPath();
@@ -48,6 +49,10 @@ function registerSwapHandlers(ipcMain) {
             '--target_image', targetPath,
             '--output_path', outputPath
         ];
+        
+        if (enhance) {
+            args.push('--enhance');
+        }
 
         logger.info('Executing python script for swap', { args });
 

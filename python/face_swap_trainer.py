@@ -36,6 +36,11 @@ def get_imports():
     except ImportError:
         pass # Maybe older version or different structure
 
+# Lazy import for GFPGAN to avoid heavy load if not used
+def get_enhancer_imports():
+    global GFPGANer
+    from gfpgan import GFPGANer
+
 def setup_logger():
     pass
 
@@ -43,6 +48,7 @@ class FaceTrainer:
     def __init__(self):
         self.app = None
         self.swapper = None
+        self.enhancer = None
         
     def initialize(self):
         get_imports()
@@ -195,9 +201,32 @@ class FaceTrainer:
             "faces_used": len(embeddings)
         }
 
-    def swap_face(self, model_path, target_image_path, output_path):
+    def initialize_enhancer(self):
+        if self.enhancer is not None:
+            return
+
+        get_enhancer_imports()
+        
+        model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'checkpoints', 'GFPGANv1.4.pth')
+        if not os.path.exists(model_path):
+            # Fallback or error if model not present. We can try to download it or just fail.
+            # Ideally the download_models.py should handle this, but we are manual now.
+            # Let's assume it exists or throw error.
+            raise FileNotFoundError(f"GFPGAN model not found at {model_path}")
+
+        # Initialize GFPGAN
+        # upscale=1 means we don't upscale the whole image, just restore the face quality
+        self.enhancer = GFPGANer(model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
+
+    def swap_face(self, model_path, target_image_path, output_path, enhance=False):
         if not self.app:
             self.initialize()
+            
+        if enhance:
+            try:
+                self.initialize_enhancer()
+            except Exception as e:
+                return {"success": False, "error": f"Failed to init enhancer: {str(e)}. Did you download GFPGANv1.4.pth?"}
             
         # Load source embedding from trained model
         try:
@@ -243,6 +272,17 @@ class FaceTrainer:
         for face in faces:
             res_img = self.swapper.get(res_img, face, source_face, paste_back=True)
             
+        # Enhance Result if requested
+        if enhance and self.enhancer:
+            try:
+                # GFPGAN restore
+                # enhance(img, has_aligned=False, only_center_face=False, paste_back=True)
+                # returns cropped_faces, restored_faces, restored_img
+                _, _, res_img = self.enhancer.enhance(res_img, has_aligned=False, only_center_face=False, paste_back=True)
+            except Exception as e:
+                print(f"Warning: Enhancement failed: {e}", file=sys.stderr)
+                # Don't fail the whole swap, just return un-enhanced result
+            
         # Save result
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         cv2.imwrite(output_path, res_img)
@@ -257,6 +297,7 @@ def main():
     parser.add_argument("--model_name")
     parser.add_argument("--model_path")
     parser.add_argument("--target_image")
+    parser.add_argument("--enhance", action="store_true", help="Enable face enhancement")
     
     args = parser.parse_args()
     
@@ -272,7 +313,7 @@ def main():
             print(json.dumps(res))
             
         elif args.command == "swap":
-            res = trainer.swap_face(args.model_path, args.target_image, args.output_path)
+            res = trainer.swap_face(args.model_path, args.target_image, args.output_path, enhance=args.enhance)
             print(json.dumps(res))
             
         else:

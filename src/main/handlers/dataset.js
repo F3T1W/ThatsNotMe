@@ -74,6 +74,24 @@ function registerDatasetHandlers(ipcMain) {
          return [];
      }
   });
+
+  /**
+   * Clears the training dataset folder.
+   * @returns {Promise<Object>} Result object.
+   */
+  ipcMain.handle('clear-training-dataset', async () => {
+    try {
+      const trainingDir = path.join(process.cwd(), 'datasets', 'training');
+      if (await fs.pathExists(trainingDir)) {
+        await fs.emptyDir(trainingDir);
+      }
+      logger.info('Training dataset cleared.');
+      return { success: true };
+    } catch (error) {
+      logger.error('Error clearing training dataset', error);
+      return { success: false, error: error.message };
+    }
+  });
 }
 
 module.exports = { registerDatasetHandlers };
