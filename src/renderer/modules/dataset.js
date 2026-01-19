@@ -2,6 +2,8 @@ const { ipcRenderer } = require('electron');
 const { logger } = require('../utils/logger');
 const { notifications } = require('../utils/notifications');
 
+const { i18n } = require('../utils/i18n');
+
 /**
  * Dataset management module for UI.
  * @module dataset-module
@@ -33,21 +35,21 @@ class DatasetModule {
      * Handles reset dataset button click.
      */
     async handleReset() {
-        if (!confirm('Are you sure you want to delete all training images? This cannot be undone.')) {
+        if (!confirm(i18n.t('dataset.delete_confirm'))) {
             return;
         }
 
         try {
             const result = await ipcRenderer.invoke('clear-training-dataset');
             if (result.success) {
-                notifications.show('Dataset cleared successfully', 'success');
+                notifications.show(i18n.t('dataset.cleared'), 'success');
                 await this.loadExistingImages();
             } else {
-                notifications.show(`Error clearing dataset: ${result.error}`, 'danger');
+                notifications.show(`${i18n.t('dataset.clear_error')}: ${result.error}`, 'danger');
             }
         } catch (error) {
             logger.error('Error clearing dataset', error);
-            notifications.show('Failed to clear dataset', 'danger');
+            notifications.show(i18n.t('dataset.clear_error'), 'danger');
         }
     }
 
@@ -57,7 +59,7 @@ class DatasetModule {
     async handleSelection() {
         try {
             this.selectBtn.disabled = true;
-            this.selectBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            this.selectBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${i18n.t('dataset.loading')}`;
             
             const filePaths = await ipcRenderer.invoke('select-training-images');
             
@@ -66,7 +68,7 @@ class DatasetModule {
                 const result = await ipcRenderer.invoke('save-training-images', filePaths);
                 
                 if (result.success) {
-                    notifications.show(`Successfully saved ${result.count} images`, 'success');
+                    notifications.show(i18n.t('dataset.saved').replace('{count}', result.count), 'success');
                     await this.loadExistingImages();
                     this.validateDataset();
                 } else {
@@ -78,7 +80,7 @@ class DatasetModule {
             notifications.show('Failed to select images', 'danger');
         } finally {
             this.selectBtn.disabled = false;
-            this.selectBtn.innerHTML = '<i class="bi bi-folder-plus"></i> Select Training Images';
+            this.selectBtn.innerHTML = `<i class="bi bi-folder-plus"></i> <span data-i18n="dataset.select">${i18n.t('dataset.select')}</span>`;
         }
     }
 
@@ -87,7 +89,7 @@ class DatasetModule {
      */
     async validateDataset() {
         try {
-            notifications.show('Validating images for faces...', 'info');
+            notifications.show(i18n.t('dataset.validating'), 'info');
             // Assuming default training path for now, matching backend
             const datasetPath = 'datasets/training'; 
             // We need absolute path for python script usually, but let's see how python handler handles it. 
@@ -101,16 +103,16 @@ class DatasetModule {
             
             if (result.error) {
                 logger.error('Validation error', result.error);
-                notifications.show(`Validation failed: ${result.error}`, 'danger');
+                notifications.show(`${i18n.t('dataset.validation_failed')}: ${result.error}`, 'danger');
                 return;
             }
 
             if (result.results) {
                 const noFaces = result.results.filter(r => r.faces_count === 0);
                 if (noFaces.length > 0) {
-                    notifications.show(`Warning: ${noFaces.length} images have no detected faces.`, 'warning');
+                    notifications.show(i18n.t('dataset.warning_no_faces').replace('{count}', noFaces.length), 'warning');
                 } else {
-                    notifications.show('All images have valid faces!', 'success');
+                    notifications.show(i18n.t('dataset.all_valid'), 'success');
                 }
             }
         } catch (error) {

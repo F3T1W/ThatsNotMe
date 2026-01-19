@@ -92,6 +92,22 @@ function registerDatasetHandlers(ipcMain) {
       return { success: false, error: error.message };
     }
   });
+
+  ipcMain.handle('select-folder', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openDirectory']
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+        return null;
+    }
+    return result.filePaths[0];
+  });
+
+  ipcMain.handle('open-folder', async (event, folderPath) => {
+      const { shell } = require('electron');
+      await shell.openPath(folderPath);
+      return { success: true };
+  });
 }
 
 module.exports = { registerDatasetHandlers };

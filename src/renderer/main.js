@@ -4,8 +4,13 @@ const { logger } = require('./utils/logger');
 const { datasetModule } = require('./modules/dataset');
 const { trainingModule } = require('./modules/training');
 const { swapModule } = require('./modules/swap');
+const { settingsModule } = require('./modules/settings');
+const { homeModule } = require('./modules/home');
+const { testModule } = require('./modules/test');
 
 const { notifications } = require('./utils/notifications');
+
+const { i18n } = require('./utils/i18n');
 
 /**
  * Main renderer orchestrator.
@@ -16,7 +21,12 @@ class App {
         this.initNavigation();
         this.initUpdates();
         this.initPythonStatus();
+        this.initI18n();
         logger.info('Renderer app initialized');
+    }
+
+    initI18n() {
+        i18n.updateAll();
     }
 
     /**

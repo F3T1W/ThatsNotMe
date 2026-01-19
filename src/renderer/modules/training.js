@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const { logger } = require('../utils/logger');
 const { notifications } = require('../utils/notifications');
+const { i18n } = require('../utils/i18n');
 
 class TrainingModule {
     constructor() {
@@ -21,34 +22,34 @@ class TrainingModule {
                 <div class="col-md-8 col-lg-6">
                     <div class="card fade-in">
                         <div class="card-header">
-                            <h5 class="mb-0 text-white">Train New Model</h5>
+                            <h5 class="mb-0 text-white" data-i18n="training.title">Train New Model</h5>
                         </div>
                         <div class="card-body">
                             <form id="train-form">
                                 <div class="mb-4">
-                                    <label class="form-label text-white">Model Name</label>
-                                    <input type="text" class="form-control form-control-lg" id="model-name-input" placeholder="e.g. My Face" required>
-                                    <div class="form-text text-white-50">Give your model a unique name to identify it later.</div>
+                                    <label class="form-label text-white" data-i18n="training.model_name">Model Name</label>
+                                    <input type="text" class="form-control form-control-lg" id="model-name-input" data-i18n="training.enter_name" placeholder="e.g. My Face" required>
+                                    <div class="form-text text-white-50" data-i18n="training.helper">.fsem will be appended automatically</div>
                                 </div>
                                 
                                 <div class="alert alert-info border-0 bg-opacity-10 bg-info text-info">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Ensure you have uploaded at least 10-20 photos in "Training Dataset" tab before starting.
+                                    <span data-i18n="dataset.info">Ensure you have uploaded at least 10-20 photos in "Training Dataset" tab before starting.</span>
                                 </div>
 
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary btn-lg" id="btn-start-training">
-                                        <i class="bi bi-cpu-fill me-2"></i> Start Training
+                                        <i class="bi bi-cpu-fill me-2"></i> <span data-i18n="training.start">Start Training</span>
                                     </button>
                                 </div>
                             </form>
                             
                             <div id="training-status" class="mt-4 d-none">
-                                <h6 class="text-white mb-2">Training Progress</h6>
+                                <h6 class="text-white mb-2" data-i18n="training.progress">Training Progress</h6>
                                 <div class="progress" style="height: 6px; background-color: #333;">
                                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: 100%"></div>
                                 </div>
-                                <p class="text-white-50 mt-2 small text-center">Processing images and extracting features... This may take a minute.</p>
+                                <p class="text-white-50 mt-2 small text-center" data-i18n="training.in_progress">Processing images and extracting features... This may take a minute.</p>
                             </div>
                         </div>
                     </div>

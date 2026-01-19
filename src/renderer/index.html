@@ -19,27 +19,27 @@
     <nav class="nav flex-column">
         <a class="nav-link active" data-page="home">
             <i class="bi bi-house-door"></i>
-            <span>Home</span>
+            <span data-i18n="sidebar.home">Home</span>
         </a>
         <a class="nav-link" data-page="training-dataset">
             <i class="bi bi-images"></i>
-            <span>Training Dataset</span>
+            <span data-i18n="sidebar.dataset">Training Dataset</span>
         </a>
         <a class="nav-link" data-page="train-model">
             <i class="bi bi-cpu"></i>
-            <span>Train Model</span>
-        </a>
-        <a class="nav-link" data-page="test-dataset">
-            <i class="bi bi-folder2-open"></i>
-            <span>Test Dataset</span>
+            <span data-i18n="sidebar.train">Train Model</span>
         </a>
         <a class="nav-link" data-page="face-swap">
             <i class="bi bi-arrow-repeat"></i>
-            <span>Face Swap</span>
+            <span data-i18n="sidebar.swap">Face Swap</span>
+        </a>
+        <a class="nav-link" data-page="test-dataset">
+            <i class="bi bi-folder2-open"></i>
+            <span data-i18n="sidebar.test">Test Dataset</span>
         </a>
         <a class="nav-link" data-page="settings">
             <i class="bi bi-gear"></i>
-            <span>Settings</span>
+            <span data-i18n="sidebar.settings">Settings</span>
         </a>
     </nav>
 </div>
@@ -47,24 +47,38 @@
 <div class="main-content">
     <!-- Home Page -->
     <div id="page-home" class="page-content fade-in">
-        <h2 class="mb-4">Dashboard</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Training Images</h5>
-                        <p class="card-text display-4" id="stat-training-count">0</p>
+        <div class="text-center py-5">
+            <h1 class="display-4 fw-bold text-white mb-3">
+                <span data-i18n="home.welcome">Welcome to</span> <span class="text-primary" data-i18n="home.title">ThatsNotMe</span>
+            </h1>
+            <p class="lead text-white-50 mx-auto" style="max-width: 700px;" data-i18n="home.description">
+                Create custom face swap models with an intuitive, end-to-end workflow. Upload photos, train your model, and swap faces all in one place.
+            </p>
+        </div>
+
+        <div class="row justify-content-center mt-4 g-4">
+            <div class="col-md-3">
+                <div class="card text-center h-100 border-0" style="background: rgba(255,255,255,0.02);">
+                    <div class="card-body d-flex flex-column justify-content-center py-4">
+                        <h1 class="display-4 fw-bold text-primary mb-0" id="stat-training-count">0</h1>
+                        <p class="text-white-50 mt-2 mb-0 small text-uppercase letter-spacing-1" data-i18n="home.training_images">Training Images</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Models Trained</h5>
-                        <p class="card-text display-4" id="stat-models-count">0</p>
+            <div class="col-md-3">
+                <div class="card text-center h-100 border-0" style="background: rgba(255,255,255,0.02);">
+                    <div class="card-body d-flex flex-column justify-content-center py-4">
+                        <h1 class="display-4 fw-bold text-primary mb-0" id="stat-models-count">0</h1>
+                        <p class="text-white-50 mt-2 mb-0 small text-uppercase letter-spacing-1" data-i18n="home.models_trained">Models Trained</p>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <div class="text-center mt-5">
+             <button id="btn-reset-stats" class="btn btn-outline-danger btn-sm px-4 py-2 rounded-pill">
+                <i class="bi bi-trash me-2"></i><span data-i18n="home.reset_stats">Reset Statistics</span>
+             </button>
         </div>
     </div>
 
@@ -72,19 +86,19 @@
     <div id="page-training-dataset" class="page-content d-none fade-in">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Training Dataset</h5>
+                <h5 class="mb-0" data-i18n="dataset.title">Training Dataset</h5>
                 <div>
                     <button id="btn-reset-dataset" class="btn btn-outline-danger me-2">
-                        <i class="bi bi-trash"></i> Reset
+                        <i class="bi bi-trash"></i> <span data-i18n="dataset.reset">Reset</span>
                     </button>
                     <button id="btn-select-training" class="btn btn-primary">
-                        <i class="bi bi-folder-plus"></i> Select Training Images
+                        <i class="bi bi-folder-plus"></i> <span data-i18n="dataset.select">Select Training Images</span>
                     </button>
                 </div>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i> Upload at least 10-20 photos of the same person.
+                    <i class="bi bi-info-circle me-2"></i> <span data-i18n="dataset.info">Upload at least 10-20 photos of the same person.</span>
                 </div>
                 <div id="training-preview" class="row g-3">
                     <!-- Images will be inserted here -->

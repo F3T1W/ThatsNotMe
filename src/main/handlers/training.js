@@ -2,6 +2,7 @@ const path = require('path');
 const { logger } = require('../utils/logger');
 const { pythonEnv } = require('../utils/python-env');
 const { execFile } = require('child_process');
+const { shell } = require('electron');
 
 /**
  * Registers training-related IPC handlers.
@@ -108,6 +109,36 @@ function registerTrainingHandlers(ipcMain) {
           });
           
       return models;
+  });
+
+  ipcMain.handle('clear-models', async () => {
+      const fs = require('fs-extra');
+      const modelsDir = path.join(process.cwd(), 'models');
+      try {
+          // Delete all .fsem and associated .jpg previews
+          const files = await fs.readdir(modelsDir);
+          for (const file of files) {
+              if (file.endsWith('.fsem') || file.endsWith('.jpg')) {
+                  // Keep default models if any? No, we only keep models in 'models' folder which are user trained.
+                  // Checkpoints are in 'models/checkpoints'. 'models' root is for user models.
+                  // BUT WAIT: 'checkpoints' is inside 'models'. We MUST NOT delete 'models/checkpoints'.
+                  const filePath = path.join(modelsDir, file);
+                  if ((await fs.stat(filePath)).isFile()) {
+                       await fs.unlink(filePath);
+                  }
+              }
+          }
+          return { success: true };
+      } catch (error) {
+          logger.error('Failed to clear models', error);
+          return { success: false, error: error.message };
+      }
+  });
+
+  ipcMain.handle('open-models-folder', async () => {
+      const modelsPath = path.join(process.cwd(), 'models');
+      await shell.openPath(modelsPath);
+      return { success: true };
   });
 }
 

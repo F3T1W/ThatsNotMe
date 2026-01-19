@@ -30,9 +30,10 @@ function registerSwapHandlers(ipcMain) {
    * @param {string} params.modelPath - Path to the .fsem model file.
    * @param {string} params.targetPath - Path to the target image.
    * @param {boolean} params.enhance - Whether to enhance the face.
+   * @param {number} params.upscale - Upscale factor (1-4).
    */
-  ipcMain.handle('start-face-swap', async (event, { modelPath, targetPath, enhance }) => {
-    logger.info('Starting face swap', { modelPath, targetPath, enhance });
+  ipcMain.handle('start-face-swap', async (event, { modelPath, targetPath, enhance, upscale }) => {
+    logger.info('Starting face swap', { modelPath, targetPath, enhance, upscale });
     
     return new Promise((resolve, reject) => {
         const pythonPath = pythonEnv.getPythonPath();
@@ -52,6 +53,9 @@ function registerSwapHandlers(ipcMain) {
         
         if (enhance) {
             args.push('--enhance');
+            if (upscale) {
+                args.push('--upscale', upscale.toString());
+            }
         }
 
         logger.info('Executing python script for swap', { args });
@@ -108,6 +112,65 @@ function registerSwapHandlers(ipcMain) {
             }
         });
     });
+  });
+
+  /**
+   * Starts batch face swapping process.
+   */
+  ipcMain.handle('start-batch-swap', async (event, { modelPath, inputDir, enhance, upscale }) => {
+      return new Promise((resolve, reject) => {
+          const { spawn } = require('child_process');
+          const pythonPath = pythonEnv.getPythonPath();
+          const scriptPath = path.join(process.cwd(), 'python', 'face_swap_trainer.py');
+          const outputDir = path.join(process.cwd(), 'datasets', 'results', `batch_${Date.now()}`);
+          
+          const args = [
+              scriptPath,
+              '--command', 'batch_swap',
+              '--model_path', modelPath,
+              '--dataset_path', inputDir, // dataset_path arg is used for input dir in batch mode
+              '--output_path', outputDir,
+              '--upscale', String(upscale)
+          ];
+          
+          if (enhance) args.push('--enhance');
+
+          logger.info('Starting batch swap', { args });
+
+          const child = spawn(pythonPath, args);
+
+          child.stdout.on('data', (data) => {
+              const lines = data.toString().split('\n');
+              for (const line of lines) {
+                  const trimmed = line.trim();
+                  if (!trimmed) continue;
+                  try {
+                      const json = JSON.parse(trimmed);
+                      if (json.progress !== undefined) {
+                          event.sender.send('batch-progress', json);
+                      } else if (json.success) {
+                          resolve(json);
+                      } else if (json.error) {
+                          if (!json.count) {
+                              reject(new Error(json.error)); 
+                          }
+                      }
+                  } catch (e) {
+                      logger.debug(`Batch stdout: ${trimmed}`);
+                  }
+              }
+          });
+
+          child.stderr.on('data', (data) => {
+              logger.warn(`Batch stderr: ${data}`);
+          });
+
+          child.on('close', (code) => {
+              if (code !== 0) {
+                  reject(new Error(`Process exited with code ${code}`));
+              }
+          });
+      });
   });
 }
 

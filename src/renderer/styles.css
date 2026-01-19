@@ -1,6 +1,7 @@
 :root {
     --sidebar-width: 280px;
     --primary-color: #dc3545;
+    --primary-rgb: 220, 53, 69;
     --dark-bg: #121212;
     --card-bg: #1e1e1e;
     --text-color: #e0e0e0;
@@ -49,7 +50,7 @@ body {
 .nav-link.active {
     color: #fff;
     border-left-color: var(--primary-color);
-    background-color: rgba(220, 53, 69, 0.1);
+    background-color: rgba(var(--primary-rgb), 0.1);
 }
 
 .nav-link i {
@@ -62,6 +63,36 @@ body {
     margin-left: var(--sidebar-width);
     padding: 30px;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Page Content */
+.page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertical centering by default */
+}
+
+/* Home Page Specific */
+#page-home {
+    justify-content: flex-start; /* Home page is better top-aligned/spaced manually */
+}
+
+/* Dataset Page Specific */
+#page-training-dataset {
+    justify-content: flex-start; /* Dataset page needs top alignment for grid */
+}
+
+/* Settings Page Specific */
+#page-settings {
+    justify-content: flex-start; /* Settings usually scrollable */
+}
+
+/* Test Dataset Page Specific */
+#page-test-dataset {
+    justify-content: center; /* Center Test tab content */
 }
 
 /* Cards */
@@ -71,11 +102,11 @@ body {
     border-radius: 12px;
     margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: var(--text-color);
+    color: var(--text-color) !important;
 }
 
 .card-title, .card-text, .card-header {
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .card-header {
@@ -90,17 +121,25 @@ body {
 }
 
 /* Forms */
-.form-control {
+.form-control, .form-select {
     background-color: #2b2b2b;
     border: 1px solid #444;
     color: #fff;
 }
 
-.form-control:focus {
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:focus, .form-select:focus {
     background-color: #2b2b2b;
     border-color: var(--primary-color);
     color: #fff;
-    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.25);
+}
+
+.form-select.form-select-lg {
+    font-size: 1rem;
 }
 
 .form-label {
@@ -109,13 +148,42 @@ body {
 
 /* Buttons */
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
 }
 
 .btn-primary:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
+    filter: brightness(0.9);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+/* Theme Cards */
+.theme-card {
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.theme-card:hover {
+    transform: translateY(-2px);
+}
+
+.theme-card.active {
+    box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5);
+    border-color: var(--primary-color) !important;
 }
 
 /* Utils */
@@ -131,4 +199,23 @@ body {
 .img-thumbnail {
     background-color: #2b2b2b;
     border-color: #444;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e1e; 
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444; 
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
 }

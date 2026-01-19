@@ -50,6 +50,15 @@ function registerPythonHandlers(ipcMain) {
          return { error: error.message };
      }
   });
+
+  ipcMain.handle('check-python-installation', async () => {
+      try {
+          const installed = await pythonEnv.checkEnv();
+          return { installed, version: '3.9.6' }; // Hardcoded version for now as we use venv
+      } catch (error) {
+          return { installed: false, error: error.message };
+      }
+  });
 }
 
 module.exports = { registerPythonHandlers };

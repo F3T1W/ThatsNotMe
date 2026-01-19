@@ -1,10 +1,11 @@
 const { ipcRenderer } = require('electron');
 const { logger } = require('../utils/logger');
 const { notifications } = require('../utils/notifications');
+const { i18n } = require('../utils/i18n');
 
 class SwapModule {
     constructor() {
-        this.container = document.getElementById('page-face-swap');
+        this.container = document.getElementById('page-test-dataset');
         this.selectedModelPath = null;
         this.selectedTargetImage = null;
         this.init();
@@ -14,7 +15,7 @@ class SwapModule {
         this.render();
         this.attachListeners();
         // Load models list when page is shown
-        const link = document.querySelector('.nav-link[data-page="face-swap"]');
+        const link = document.querySelector('.nav-link[data-page="test-dataset"]');
         if (link) {
             link.addEventListener('click', () => this.refreshModels());
         }
@@ -34,37 +35,38 @@ class SwapModule {
                         <div class="card-body">
                             <!-- Model Selector -->
                             <div class="mb-4">
-                                <label class="form-label text-white">Select Model</label>
+                                <label class="form-label text-white" data-i18n="swap.select_model">Select Model</label>
                                 <select class="form-select form-select-lg bg-dark text-white border-secondary" id="swap-model-select">
-                                    <option selected disabled>Loading models...</option>
+                                    <option selected disabled data-i18n="swap.loading_models">Loading models...</option>
                                 </select>
                             </div>
 
                             <!-- Target Image -->
                             <div class="mb-4">
-                                <label class="form-label text-white">Target Photo</label>
+                                <label class="form-label text-white" data-i18n="swap.target_photo">Target Photo</label>
                                 <div class="d-grid">
                                     <button class="btn btn-outline-secondary btn-lg" id="btn-select-target">
-                                        <i class="bi bi-image me-2"></i> Choose Photo
+                                        <i class="bi bi-image me-2"></i> <span data-i18n="swap.choose_photo">Choose Photo</span>
                                     </button>
                                 </div>
                             </div>
                             
                             <!-- Enhancement Options -->
                             <div class="mb-4">
-                                <div class="form-check form-switch">
+                                <div class="form-check form-switch mb-2">
                                     <input class="form-check-input" type="checkbox" id="check-enhance">
-                                    <label class="form-check-label text-white" for="check-enhance">
-                                        Enhance Face Quality (Slower)
+                                    <label class="form-check-label text-white" for="check-enhance" data-i18n="swap.enhance">
+                                        Enhance Face Quality
                                     </label>
                                 </div>
-                                <div class="form-text text-white-50">Uses GFPGAN to restore details and fix blurriness. Requires downloading additional model (~300MB).</div>
+                                
+                                <div class="form-text text-white-50 mt-2" data-i18n="swap.desc">Uses GFPGAN to restore details. Higher strength takes more time but gives clearer results.</div>
                             </div>
                             
                             <!-- Action -->
                             <div class="d-grid mt-5">
                                 <button class="btn btn-primary btn-lg py-3" id="btn-start-swap" disabled>
-                                    <i class="bi bi-magic me-2"></i> Swap Face
+                                    <i class="bi bi-magic me-2"></i> <span data-i18n="swap.start">Swap Face</span>
                                 </button>
                             </div>
                         </div>
@@ -74,8 +76,8 @@ class SwapModule {
                         <div class="d-flex align-items-center">
                             <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>
                             <div>
-                                <strong>Processing...</strong><br>
-                                Applying face swap. Please wait.
+                                <strong data-i18n="swap.processing">Processing...</strong><br>
+                                <span data-i18n="swap.wait">Applying face swap. Please wait.</span>
                             </div>
                         </div>
                     </div>
@@ -85,12 +87,12 @@ class SwapModule {
                 <div class="col-md-8">
                     <div class="card h-100" style="min-height: 500px;">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 text-white">Preview</h5>
-                            <span class="badge bg-secondary" id="preview-badge">No Image</span>
+                            <h5 class="mb-0 text-white" data-i18n="swap.preview">Preview</h5>
+                            <span class="badge bg-secondary" id="preview-badge" data-i18n="swap.no_image">No Image</span>
                         </div>
                         <div class="card-body d-flex align-items-center justify-content-center bg-black position-relative p-0 overflow-hidden">
                             <div id="image-comparison" class="w-100 h-100 d-flex justify-content-center align-items-center">
-                                <p class="text-white-50">Select a target photo to start</p>
+                                <p class="text-white-50" data-i18n="swap.select_target">Select a target photo to start</p>
                             </div>
                         </div>
                     </div>
@@ -103,6 +105,7 @@ class SwapModule {
         const selectBtn = document.getElementById('btn-select-target');
         const swapBtn = document.getElementById('btn-start-swap');
         const modelSelect = document.getElementById('swap-model-select');
+        const enhanceCheck = document.getElementById('check-enhance');
 
         if (selectBtn) {
             selectBtn.addEventListener('click', () => this.handleSelectTarget());
@@ -116,6 +119,7 @@ class SwapModule {
                 this.updateSwapButton();
             });
         }
+        // enhanceCheck listener for upscale toggle removed
     }
 
     async refreshModels() {
@@ -126,14 +130,14 @@ class SwapModule {
             const models = await ipcRenderer.invoke('get-models-list');
             
             if (models.length === 0) {
-                select.innerHTML = '<option disabled selected>No models found. Train one first!</option>';
+                select.innerHTML = `<option disabled selected data-i18n="swap.no_models">${i18n.t('swap.no_models')}</option>`;
             } else {
-                select.innerHTML = '<option disabled selected value="">Select a trained model...</option>' + 
+                select.innerHTML = `<option disabled selected value="" data-i18n="swap.select_placeholder">${i18n.t('swap.select_placeholder')}</option>` + 
                     models.map(m => `<option value="${m.path}">${m.name}</option>`).join('');
             }
         } catch (error) {
             logger.error('Failed to load models', error);
-            select.innerHTML = '<option disabled>Error loading models</option>';
+            select.innerHTML = `<option disabled data-i18n="swap.error_loading">${i18n.t('swap.error_loading')}</option>`;
         }
     }
 
@@ -180,14 +184,18 @@ class SwapModule {
             const result = await ipcRenderer.invoke('start-face-swap', {
                 modelPath: this.selectedModelPath,
                 targetPath: this.selectedTargetImage,
-                enhance: enhanceCheck ? enhanceCheck.checked : false
+                enhance: enhanceCheck ? enhanceCheck.checked : false,
+                upscale: 1 // Default to 1x enhancement if enabled (no upscale but restore)
             });
 
             if (result.success) {
-                notifications.show('Face swap completed!', 'success');
-                this.displayImage(result.output_path, 'Swapped Result');
-                document.getElementById('preview-badge').textContent = 'Result';
-                document.getElementById('preview-badge').className = 'badge bg-success';
+                notifications.show(i18n?.t('swap.success') || 'Face swap completed!', 'success');
+                this.displayImage(result.output_path, i18n?.t('swap.result') || 'Result');
+                const badge = document.getElementById('preview-badge');
+                if (badge) {
+                    badge.textContent = i18n?.t('swap.result') || 'Result';
+                    badge.className = 'badge bg-success';
+                }
             } else {
                 throw new Error(result.error);
             }
