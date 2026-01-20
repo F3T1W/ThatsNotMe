@@ -44,7 +44,8 @@ function registerTrainingHandlers(ipcMain) {
 
         logger.info('Executing python script', { args });
 
-        execFile(pythonPath, [scriptPath, ...args], { env }, (error, stdout, stderr) => { { maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
+        // Corrected syntax: options object merges env and maxBuffer
+        execFile(pythonPath, [scriptPath, ...args], { env, maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
             if (error) {
                 logger.error('Training script failed', { error, stderr });
                 // Don't return immediately, check stdout for result
