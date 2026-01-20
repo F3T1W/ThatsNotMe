@@ -39,6 +39,19 @@ def get_imports():
 # Lazy import for GFPGAN to avoid heavy load if not used
 def get_enhancer_imports():
     global GFPGANer
+    # CRITICAL FIX: Patch for torchvision 0.16+ compatibility in basicsr
+    # basicsr tries to import 'functional_tensor' which was removed in newer torchvision.
+    import sys
+    try:
+        import torchvision.transforms.functional as F
+        try:
+             import torchvision.transforms.functional_tensor
+        except ImportError:
+             # Map the missing module to the main functional module
+             sys.modules['torchvision.transforms.functional_tensor'] = F
+    except Exception:
+        pass
+
     from gfpgan import GFPGANer
 
 def setup_logger():
