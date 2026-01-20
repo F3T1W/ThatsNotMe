@@ -1,5 +1,6 @@
 const { execFile, spawn } = require('child_process');
 const path = require('path');
+const { app } = require('electron');
 const { logger } = require('../utils/logger');
 const { pythonEnv } = require('../utils/python-env');
 
@@ -83,8 +84,10 @@ function registerPythonHandlers(ipcMain) {
       });
   });
 
-  ipcMain.handle('validate-images', async (event, datasetPath) => {
+  ipcMain.handle('validate-images', async (event) => {
      try {
+         // Always use the correct userdata path, ignore whatever renderer sent
+         const datasetPath = path.join(app.getPath('userData'), 'datasets', 'training');
          return await runPythonScript('face_swap_trainer.py', ['--command', 'detect_faces', '--dataset_path', datasetPath]);
      } catch (error) {
          return { error: error.message };

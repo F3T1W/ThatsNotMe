@@ -65,9 +65,12 @@ function registerSwapHandlers(ipcMain) {
 
         logger.info('Executing python script for swap', { args });
 
+        // Pass env with MODELS_DIR
+        const env = pythonEnv.getEnv();
+
         // Using execFile with default encoding which is 'utf8'
         // If stderr has content, it might not be a crash, just warnings (TensorFlow/InsightFace are noisy)
-        execFile(pythonPath, [scriptPath, ...args], { maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
+        execFile(pythonPath, [scriptPath, ...args], { env, maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
             if (error) {
                 logger.error('Swap script failed', { error, stderr });
                 // Don't reject immediately on stderr unless error is set
@@ -142,7 +145,8 @@ function registerSwapHandlers(ipcMain) {
 
           logger.info('Starting batch swap', { args });
 
-          const child = spawn(pythonPath, args);
+          const env = pythonEnv.getEnv();
+          const child = spawn(pythonPath, args, { env });
 
           child.stdout.on('data', (data) => {
               const lines = data.toString().split('\n');
