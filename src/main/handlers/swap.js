@@ -1,8 +1,13 @@
 const path = require('path');
-const { dialog } = require('electron');
+const { dialog, app } = require('electron');
 const { logger } = require('../utils/logger');
 const { pythonEnv } = require('../utils/python-env');
 const { execFile } = require('child_process');
+
+// Helper function to get results directory
+function getResultsDir() {
+    return path.join(app.getPath('userData'), 'datasets', 'results');
+}
 
 /**
  * Registers swap-related IPC handlers.
@@ -37,10 +42,10 @@ function registerSwapHandlers(ipcMain) {
     
     return new Promise((resolve, reject) => {
         const pythonPath = pythonEnv.getPythonPath();
-        const scriptPath = path.join(process.cwd(), 'python', 'face_swap_trainer.py');
+        const scriptPath = path.join(pythonEnv.pythonScriptsDir, 'face_swap_trainer.py');
         
         // Output path: datasets/results/swap_TIMESTAMP.jpg
-        const outputDir = path.join(process.cwd(), 'datasets', 'results');
+        const outputDir = getResultsDir();
         const timestamp = Date.now();
         const outputPath = path.join(outputDir, `swap_${timestamp}.jpg`);
 
@@ -121,8 +126,8 @@ function registerSwapHandlers(ipcMain) {
       return new Promise((resolve, reject) => {
           const { spawn } = require('child_process');
           const pythonPath = pythonEnv.getPythonPath();
-          const scriptPath = path.join(process.cwd(), 'python', 'face_swap_trainer.py');
-          const outputDir = path.join(process.cwd(), 'datasets', 'results', `batch_${Date.now()}`);
+          const scriptPath = path.join(pythonEnv.pythonScriptsDir, 'face_swap_trainer.py');
+          const outputDir = path.join(getResultsDir(), `batch_${Date.now()}`);
           
           const args = [
               scriptPath,

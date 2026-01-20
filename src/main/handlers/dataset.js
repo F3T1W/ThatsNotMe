@@ -1,7 +1,15 @@
-const { dialog } = require('electron');
+const { dialog, app } = require('electron');
 const fs = require('fs-extra');
 const path = require('path');
 const { logger } = require('../utils/logger');
+
+/**
+ * Helper to get training dataset directory
+ */
+function getTrainingDir() {
+    const userDataPath = app.getPath('userData');
+    return path.join(userDataPath, 'datasets', 'training');
+}
 
 /**
  * Registers dataset-related IPC handlers.
@@ -32,7 +40,7 @@ function registerDatasetHandlers(ipcMain) {
    */
   ipcMain.handle('save-training-images', async (event, filePaths) => {
     try {
-      const trainingDir = path.join(process.cwd(), 'datasets', 'training');
+      const trainingDir = getTrainingDir();
       await fs.ensureDir(trainingDir);
 
       // Clear existing directory? Or append? Assuming append or overwrite unique names.
@@ -60,7 +68,7 @@ function registerDatasetHandlers(ipcMain) {
    */
   ipcMain.handle('load-training-dataset', async () => {
      try {
-      const trainingDir = path.join(process.cwd(), 'datasets', 'training');
+      const trainingDir = getTrainingDir();
       if (await fs.pathExists(trainingDir)) {
           const files = await fs.readdir(trainingDir);
           // Return full paths
@@ -81,7 +89,7 @@ function registerDatasetHandlers(ipcMain) {
    */
   ipcMain.handle('clear-training-dataset', async () => {
     try {
-      const trainingDir = path.join(process.cwd(), 'datasets', 'training');
+      const trainingDir = getTrainingDir();
       if (await fs.pathExists(trainingDir)) {
         await fs.emptyDir(trainingDir);
       }

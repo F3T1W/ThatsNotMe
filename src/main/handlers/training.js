@@ -2,7 +2,7 @@ const path = require('path');
 const { logger } = require('../utils/logger');
 const { pythonEnv } = require('../utils/python-env');
 const { execFile } = require('child_process');
-const { shell } = require('electron');
+const { shell, app } = require('electron');
 
 /**
  * Registers training-related IPC handlers.
@@ -21,12 +21,16 @@ function registerTrainingHandlers(ipcMain) {
     
     return new Promise((resolve, reject) => {
         const pythonPath = pythonEnv.getPythonPath();
-        const scriptPath = path.join(process.cwd(), 'python', 'face_swap_trainer.py');
-        const datasetPath = path.join(process.cwd(), 'datasets', 'training');
+        const scriptPath = path.join(pythonEnv.pythonScriptsDir, 'face_swap_trainer.py');
+        const datasetPath = path.join(app.getPath('userData'), 'datasets', 'training');
         
         // Output path: models/MyModel.fsem
-        const outputDir = path.join(process.cwd(), 'models');
+        const outputDir = pythonEnv.modelsDir;
         const outputPath = path.join(outputDir, `${modelName}.fsem`);
+        
+        // Ensure models dir exists
+        const fs = require('fs-extra');
+        fs.ensureDirSync(outputDir);
 
         const args = [
             '--command', 'train',
@@ -34,10 +38,13 @@ function registerTrainingHandlers(ipcMain) {
             '--output_path', outputPath,
             '--model_name', modelName
         ];
+        
+        // Pass env with MODELS_DIR
+        const env = pythonEnv.getEnv();
 
         logger.info('Executing python script', { args });
 
-        execFile(pythonPath, [scriptPath, ...args], { maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
+        execFile(pythonPath, [scriptPath, ...args], { env }, (error, stdout, stderr) => { { maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
             if (error) {
                 logger.error('Training script failed', { error, stderr });
                 // Don't return immediately, check stdout for result
@@ -89,7 +96,7 @@ function registerTrainingHandlers(ipcMain) {
    */
   ipcMain.handle('get-models-list', async () => {
       const fs = require('fs-extra');
-      const modelsDir = path.join(process.cwd(), 'models');
+      const modelsDir = pythonEnv.modelsDir;
       await fs.ensureDir(modelsDir);
       
       const files = await fs.readdir(modelsDir);
@@ -113,7 +120,7 @@ function registerTrainingHandlers(ipcMain) {
 
   ipcMain.handle('clear-models', async () => {
       const fs = require('fs-extra');
-      const modelsDir = path.join(process.cwd(), 'models');
+      const modelsDir = pythonEnv.modelsDir;
       try {
           // Delete all .fsem and associated .jpg previews
           const files = await fs.readdir(modelsDir);
@@ -123,6 +130,7 @@ function registerTrainingHandlers(ipcMain) {
                   // Checkpoints are in 'models/checkpoints'. 'models' root is for user models.
                   // BUT WAIT: 'checkpoints' is inside 'models'. We MUST NOT delete 'models/checkpoints'.
                   const filePath = path.join(modelsDir, file);
+                  // Safety check: Don't delete directories (like checkpoints)
                   if ((await fs.stat(filePath)).isFile()) {
                        await fs.unlink(filePath);
                   }
@@ -136,7 +144,7 @@ function registerTrainingHandlers(ipcMain) {
   });
 
   ipcMain.handle('open-models-folder', async () => {
-      const modelsPath = path.join(process.cwd(), 'models');
+      const modelsPath = pythonEnv.modelsDir;
       await shell.openPath(modelsPath);
       return { success: true };
   });
