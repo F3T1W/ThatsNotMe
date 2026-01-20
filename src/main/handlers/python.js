@@ -21,10 +21,11 @@ function registerPythonHandlers(ipcMain) {
       // Use the directory from pythonEnv which handles packaged/dev paths
       const scriptPath = path.join(pythonEnv.pythonScriptsDir, scriptName);
       const env = pythonEnv.getEnv();
+      const cwd = pythonEnv.modelsDir; // Use writable dir
       
       logger.info(`Running Python script: ${scriptName}`, { args });
 
-      execFile(pythonPath, [scriptPath, ...args], { env }, (error, stdout, stderr) => {
+      execFile(pythonPath, [scriptPath, ...args], { env, cwd }, (error, stdout, stderr) => {
         if (error) {
           logger.error('Python script error', { error, stderr });
           reject({ error: stderr || error.message });
@@ -54,7 +55,7 @@ function registerPythonHandlers(ipcMain) {
       
       logger.info('Starting model download...');
       
-      const child = spawn(pythonPath, [scriptPath], { env });
+      const child = spawn(pythonPath, [scriptPath], { env, cwd: pythonEnv.modelsDir });
       
       child.stdout.on('data', (data) => {
           const lines = data.toString().split('\n');
