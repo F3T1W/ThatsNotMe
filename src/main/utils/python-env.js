@@ -1,6 +1,7 @@
 const { exec, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs-extra');
+const { app } = require('electron');
 const { logger } = require('./logger');
 
 /**
@@ -9,9 +10,25 @@ const { logger } = require('./logger');
  */
 class PythonEnv {
   constructor() {
-    this.rootDir = process.cwd();
-    this.venvDir = path.join(this.rootDir, 'python', 'venv');
-    this.requirementsPath = path.join(this.rootDir, 'python', 'requirements.txt');
+    this.isPackaged = app.isPackaged;
+    this.rootDir = this.isPackaged ? process.resourcesPath : process.cwd();
+    
+    // Use userData for venv and models ONLY if packaged to ensure write permissions
+    // In dev mode, use project directory to avoid breaking existing setup
+    if (this.isPackaged) {
+        const userDataPath = app.getPath('userData');
+        this.venvDir = path.join(userDataPath, 'python_venv');
+        this.modelsDir = path.join(userDataPath, 'models');
+    } else {
+        this.venvDir = path.join(this.rootDir, 'python', 'venv');
+        // Keep models in project root/models for dev
+        this.modelsDir = path.join(this.rootDir, 'models');
+    }
+    
+    // Scripts remain in source/resources
+    this.pythonScriptsDir = path.join(this.rootDir, 'python');
+    this.requirementsPath = path.join(this.pythonScriptsDir, 'requirements.txt');
+    
     this.isWindows = process.platform === 'win32';
   }
 
@@ -24,6 +41,18 @@ class PythonEnv {
       return path.join(this.venvDir, 'Scripts', 'python.exe');
     }
     return path.join(this.venvDir, 'bin', 'python');
+  }
+
+  /**
+   * Gets environment variables for Python process
+   */
+  getEnv() {
+      return {
+          ...process.env,
+          MODELS_DIR: this.modelsDir,
+          // Ensure we don't pick up global python stuff
+          PYTHONPATH: ''
+      };
   }
 
   /**
@@ -41,7 +70,12 @@ class PythonEnv {
    */
   async setup() {
     logger.info('Setting up Python environment...');
+    logger.info(`Venv Path: ${this.venvDir}`);
+    logger.info(`Models Path: ${this.modelsDir}`);
     
+    // Ensure models directory exists
+    await fs.ensureDir(this.modelsDir);
+
     // 1. Create venv if not exists
     if (!(await this.checkEnv())) {
       logger.info('Creating virtual environment...');
@@ -52,35 +86,7 @@ class PythonEnv {
     logger.info('Installing requirements...');
     await this.installRequirements();
 
-    // 3. Download Models (SKIPPED - Manual Mode)
-    // logger.info('Checking and downloading models...');
-    // await this.downloadModels();
-    
     logger.info('Python environment setup complete.');
-  }
-
-  /**
-   * Downloads required ML models.
-   */
-  downloadModels() {
-    return new Promise((resolve, reject) => {
-        const pythonPath = this.getPythonPath();
-        const scriptPath = path.join(this.rootDir, 'python', 'download_models.py');
-        
-        const child = spawn(pythonPath, [scriptPath]);
-        
-        child.stdout.on('data', (data) => logger.debug(`model_dl stdout: ${data}`));
-        child.stderr.on('data', (data) => logger.debug(`model_dl stderr: ${data}`));
-
-        child.on('close', (code) => {
-            if (code !== 0) {
-                logger.error(`Model download failed with code ${code}`);
-                reject(new Error('Model download failed'));
-            } else {
-                resolve();
-            }
-        });
-    });
   }
 
   /**

@@ -54,6 +54,12 @@ def get_enhancer_imports():
 
     from gfpgan import GFPGANer
 
+# Path configuration
+if os.environ.get('MODELS_DIR'):
+    CHECKPOINTS_DIR = os.path.join(os.environ.get('MODELS_DIR'), 'checkpoints')
+else:
+    CHECKPOINTS_DIR = os.path.join(os.path.dirname(__file__), '..', 'models', 'checkpoints')
+
 def setup_logger():
     pass
 
@@ -227,7 +233,7 @@ class FaceTrainer:
 
         get_enhancer_imports()
         
-        model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'checkpoints', 'GFPGANv1.4.pth')
+        model_path = os.path.join(CHECKPOINTS_DIR, 'GFPGANv1.4.pth')
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"GFPGAN model not found at {model_path}")
 
@@ -242,7 +248,7 @@ class FaceTrainer:
                 from basicsr.archs.rrdbnet_arch import RRDBNet
                 from realesrgan import RealESRGANer
                 
-                realesrgan_model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'checkpoints', 'RealESRGAN_x2plus.pth')
+                realesrgan_model_path = os.path.join(CHECKPOINTS_DIR, 'RealESRGAN_x2plus.pth')
                 if os.path.exists(realesrgan_model_path):
                     # RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=2)
                     model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=2)
@@ -286,14 +292,14 @@ class FaceTrainer:
     def initialize_enhancer(self, upscale=1):
         get_enhancer_imports()
         
-        model_path = os.path.join(os.path.dirname(__file__), '../models/checkpoints/GFPGANv1.4.pth')
+        model_path = os.path.join(CHECKPOINTS_DIR, 'GFPGANv1.4.pth')
         if not os.path.exists(model_path):
              print(f"Warning: GFPGAN model not found at {model_path}. Enhancement will be skipped.", file=sys.stderr)
              self.enhancer = None
              return
 
         # Check for RealESRGAN
-        realesrgan_model_path = os.path.join(os.path.dirname(__file__), '../models/checkpoints/RealESRGAN_x2plus.pth')
+        realesrgan_model_path = os.path.join(CHECKPOINTS_DIR, 'RealESRGAN_x2plus.pth')
         bg_upsampler = None
         
         if upscale > 1:
@@ -458,7 +464,7 @@ class FaceTrainer:
 
         # Initialize Swapper if needed
         if self.swapper is None:
-            model_file = os.path.join(os.path.dirname(__file__), '..', 'models', 'checkpoints', 'inswapper_128.onnx')
+            model_file = os.path.join(CHECKPOINTS_DIR, 'inswapper_128.onnx')
             if not os.path.exists(model_file):
                 return {"success": False, "error": "Inswapper model not found. Restart app to download."}
             

@@ -31,8 +31,26 @@
     },
     "files": [
       "src/**/*",
-      "python/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "python",
+        "to": "python",
+        "filter": [
+          "**/*",
+          "!venv",
+          "!**/__pycache__"
+        ]
+      },
+      {
+        "from": "models",
+        "to": "models",
+        "filter": [
+          "**/*",
+          "!checkpoints/*" 
+        ]
+      }
     ],
     "publish": {
       "provider": "github",

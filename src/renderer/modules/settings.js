@@ -111,6 +111,14 @@ class SettingsModule {
                             <h5 class="mb-0 text-white"><i class="bi bi-folder2-open me-2"></i><span data-i18n="settings.models_folder">Models Folder</span></h5>
                         </div>
                         <div class="card-body">
+                            <div class="mb-4">
+                                <h6 class="text-white mb-2"><i class="bi bi-cloud-arrow-down me-2"></i><span data-i18n="settings.download_models">Download Models</span></h6>
+                                <p class="text-white-50 mb-2" data-i18n="settings.download_desc">Download all required models (GFPGAN, RealESRGAN, Inswapper) automatically.</p>
+                                <button class="btn btn-success" id="btn-download-models">
+                                    <i class="bi bi-cloud-download me-2"></i><span data-i18n="settings.download_models">Download Models</span>
+                                </button>
+                            </div>
+                            <hr class="border-secondary">
                             <p class="text-white-50 mb-3" data-i18n="settings.open_folder_desc">Open the folder containing all trained model versions.</p>
                             <button class="btn btn-primary" id="btn-open-models">
                                 <i class="bi bi-folder me-2"></i><span data-i18n="settings.open_folder">Open Models Folder</span>
@@ -131,6 +139,30 @@ class SettingsModule {
                     </div>
 
                 </div>
+            </div>
+
+            <!-- Download Progress Modal -->
+            <div class="modal fade" id="downloadModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark border-secondary">
+                  <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white"><i class="bi bi-download me-2"></i><span data-i18n="settings.downloading">Downloading models...</span></h5>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-2 d-flex justify-content-between text-white">
+                        <span id="download-filename">Initializing...</span>
+                        <span id="download-percent">0%</span>
+                    </div>
+                    <div class="progress bg-secondary" style="height: 20px;">
+                      <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" id="download-progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <p class="text-white-50 small mt-2 text-center" id="download-status">Please wait, this may take a while.</p>
+                  </div>
+                  <div class="modal-footer border-secondary" id="download-modal-footer" style="display: none;">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
             </div>
         `;
 
@@ -196,6 +228,87 @@ class SettingsModule {
         document.getElementById('btn-open-models')?.addEventListener('click', () => {
             ipcRenderer.invoke('open-models-folder');
         });
+
+        // Download Models Button
+        document.getElementById('btn-download-models')?.addEventListener('click', () => {
+            this.startModelDownload();
+        });
+        
+        // Listen for download events (ensure single listener)
+        ipcRenderer.removeAllListeners('download-progress');
+        ipcRenderer.removeAllListeners('download-complete');
+        ipcRenderer.removeAllListeners('download-error');
+
+        ipcRenderer.on('download-progress', (event, data) => {
+            this.updateDownloadProgress(data);
+        });
+
+        ipcRenderer.on('download-complete', () => {
+            this.finishDownload(true);
+        });
+
+        ipcRenderer.on('download-error', (event, error) => {
+            this.finishDownload(false, error);
+        });
+    }
+
+    startModelDownload() {
+        // Show Modal
+        try {
+            const modalEl = document.getElementById('downloadModal');
+            this.downloadModal = new bootstrap.Modal(modalEl);
+            this.downloadModal.show();
+        } catch (e) {
+            console.error("Bootstrap modal error:", e);
+            // Fallback if bootstrap is not defined
+            notifications.show("Starting download (Modal failed to open)...", "info");
+        }
+
+        // Reset Progress UI
+        document.getElementById('download-filename').innerText = i18n.t('test.initializing');
+        document.getElementById('download-percent').innerText = '0%';
+        const bar = document.getElementById('download-progress-bar');
+        bar.style.width = '0%';
+        bar.classList.add('progress-bar-animated');
+        bar.classList.remove('bg-danger', 'bg-success');
+        
+        document.getElementById('download-status').innerText = i18n.t('swap.wait');
+        document.getElementById('download-modal-footer').style.display = 'none';
+
+        // Trigger IPC
+        ipcRenderer.send('download-models');
+    }
+
+    updateDownloadProgress(data) {
+        if (data.status === 'completed' || data.status === 'exists') {
+            document.getElementById('download-filename').innerText = `Checked: ${data.filename}`;
+        } else {
+             document.getElementById('download-filename').innerText = `${i18n.t('settings.downloading')} ${data.filename}`;
+        }
+        
+        document.getElementById('download-percent').innerText = `${data.progress}%`;
+        document.getElementById('download-progress-bar').style.width = `${data.progress}%`;
+    }
+
+    finishDownload(success, error) {
+        const bar = document.getElementById('download-progress-bar');
+        bar.classList.remove('progress-bar-animated');
+        
+        if (success) {
+            bar.classList.add('bg-success');
+            bar.style.width = '100%';
+            document.getElementById('download-filename').innerText = i18n.t('settings.download_complete');
+            document.getElementById('download-status').innerText = i18n.t('settings.download_complete');
+            notifications.show(i18n.t('settings.download_complete'), 'success');
+        } else {
+            bar.classList.add('bg-danger');
+            document.getElementById('download-filename').innerText = i18n.t('settings.download_error');
+             document.getElementById('download-status').innerText = error || 'Unknown error';
+             notifications.show(i18n.t('settings.download_error'), 'danger');
+        }
+
+        // Show close button
+        document.getElementById('download-modal-footer').style.display = 'block';
     }
 
     setTheme(themeId) {
