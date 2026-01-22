@@ -102,10 +102,16 @@ const locales = {
 
         // Test
         "test.title": "Batch Face Swap",
+        "test.mode": "Mode",
+        "test.mode_photos": "Photos (Batch)",
+        "test.mode_video": "Video",
         "test.input_folder": "Input Folder",
+        "test.input_video": "Input Video",
         "test.select_folder_btn": "Select Folder with Photos",
+        "test.select_video_btn": "Select Video File",
         "test.no_folder": "No folder selected",
         "test.start_batch": "Start Batch Processing",
+        "test.start_video": "Start Video Swap",
         "test.progress": "Progress",
         "test.eta": "ETA: {seconds}s",
         "test.processing": "Processing {current}/{total}: {filename}",
@@ -115,6 +121,7 @@ const locales = {
         "test.initializing": "Initializing...",
         "test.failed": "Failed",
         "test.success_msg": "Batch processing complete! Processed {count} images.",
+        "test.video_success": "Video processing completed!",
         "test.fail_msg": "Batch failed: {error}"
     },
     ru: {
@@ -217,10 +224,16 @@ const locales = {
 
         // Test
         "test.title": "Пакетная Замена Лиц",
+        "test.mode": "Режим",
+        "test.mode_photos": "Фото (Пакетно)",
+        "test.mode_video": "Видео",
         "test.input_folder": "Папка с Фото",
+        "test.input_video": "Исходное Видео",
         "test.select_folder_btn": "Выбрать Папку с Фото",
+        "test.select_video_btn": "Выбрать Видео",
         "test.no_folder": "Папка не выбрана",
         "test.start_batch": "Начать Обработку",
+        "test.start_video": "Начать Обработку Видео",
         "test.progress": "Прогресс",
         "test.eta": "Осталось: {seconds}сек",
         "test.processing": "Обработка {current}/{total}: {filename}",
@@ -230,6 +243,7 @@ const locales = {
         "test.initializing": "Инициализация...",
         "test.failed": "Ошибка",
         "test.success_msg": "Пакетная обработка завершена! Обработано {count} фото.",
+        "test.video_success": "Обработка видео завершена!",
         "test.fail_msg": "Ошибка обработки: {error}"
     },
     ja: {
@@ -332,10 +346,16 @@ const locales = {
 
         // Test
         "test.title": "一括顔交換",
+        "test.mode": "モード",
+        "test.mode_photos": "写真 (一括)",
+        "test.mode_video": "動画",
         "test.input_folder": "入力フォルダ",
+        "test.input_video": "入力動画",
         "test.select_folder_btn": "写真フォルダを選択",
+        "test.select_video_btn": "動画ファイルを選択",
         "test.no_folder": "フォルダが選択されていません",
         "test.start_batch": "一括処理開始",
+        "test.start_video": "動画処理開始",
         "test.progress": "進捗",
         "test.eta": "残り時間: {seconds}秒",
         "test.processing": "処理中 {current}/{total}: {filename}",
@@ -345,6 +365,7 @@ const locales = {
         "test.initializing": "初期化中...",
         "test.failed": "失敗",
         "test.success_msg": "一括処理完了！ {count} 枚を処理しました。",
+        "test.video_success": "動画処理が完了しました！",
         "test.fail_msg": "一括処理失敗: {error}"
     },
     uz: {
@@ -447,10 +468,16 @@ const locales = {
 
         // Test
         "test.title": "Ommaviy Yuz Almashtirish",
+        "test.mode": "Rejim",
+        "test.mode_photos": "Rasmlar (Ommaviy)",
+        "test.mode_video": "Video",
         "test.input_folder": "Kirish Papkasi",
+        "test.input_video": "Kirish Videos",
         "test.select_folder_btn": "Rasmlar Papkasini Tanlash",
+        "test.select_video_btn": "Video Faylni Tanlash",
         "test.no_folder": "Papka tanlanmagan",
         "test.start_batch": "Ommaviy Ishlovni Boshlash",
+        "test.start_video": "Videoni Qayta Ishlashni Boshlash",
         "test.progress": "Jarayon",
         "test.eta": "Qolgan vaqt: {seconds}s",
         "test.processing": "Qayta ishlanmoqda {current}/{total}: {filename}",
@@ -460,6 +487,7 @@ const locales = {
         "test.initializing": "Ishga tushirilmoqda...",
         "test.failed": "Xatolik",
         "test.success_msg": "Ommaviy ishlov berish yakunlandi! {count} ta rasm qayta ishlandi.",
+        "test.video_success": "Video qayta ishlash yakunlandi!",
         "test.fail_msg": "Ommaviy ishlovda xatolik: {error}"
     }
 };

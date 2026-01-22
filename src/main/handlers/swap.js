@@ -130,29 +130,46 @@ function registerSwapHandlers(ipcMain) {
   });
 
   /**
-   * Starts batch face swapping process.
+   * Starts batch face swapping or video swapping process.
    */
-  ipcMain.handle('start-batch-swap', async (event, { modelPath, inputDir, enhance, upscale }) => {
+  ipcMain.handle('start-batch-swap', async (event, { modelPath, inputPath, inputDir, enhance, upscale, mode }) => {
       return new Promise((resolve, reject) => {
           const { spawn } = require('child_process');
           const pythonPath = pythonEnv.getPythonPath();
           const scriptPath = path.join(pythonEnv.pythonScriptsDir, 'face_swap_trainer.py');
-          const outputDir = path.join(getResultsDir(), `batch_${Date.now()}`);
+          
+          // Handle backward compatibility if inputDir is passed
+          const actualInputPath = inputPath || inputDir;
+          const actualMode = mode || 'batch';
+
+          let command = 'batch_swap';
+          let outputTarget = '';
+          
+          if (actualMode === 'video') {
+              command = 'video_swap';
+              // Output file
+              outputTarget = path.join(getResultsDir(), `video_swap_${Date.now()}.mp4`);
+          } else {
+              command = 'batch_swap';
+              // Output directory
+              outputTarget = path.join(getResultsDir(), `batch_${Date.now()}`);
+          }
           
           const args = [
               scriptPath,
-              '--command', 'batch_swap',
+              '--command', command,
               '--model_path', modelPath,
-              '--dataset_path', inputDir, // dataset_path arg is used for input dir in batch mode
-              '--output_path', outputDir,
+              '--dataset_path', actualInputPath, // dataset_path arg is used for input dir/file
+              '--output_path', outputTarget,
               '--upscale', String(upscale)
           ];
           
           if (enhance) args.push('--enhance');
 
-          logger.info('Starting batch swap', { args });
+          logger.info(`Starting ${actualMode} swap`, { args });
 
           const env = pythonEnv.getEnv();
+          // Ensure we have PATH for ffmpeg if needed (moviepy usually handles it but good to know)
           const child = spawn(pythonPath, args, { env, cwd: pythonEnv.modelsDir });
 
           child.stdout.on('data', (data) => {
@@ -167,18 +184,20 @@ function registerSwapHandlers(ipcMain) {
                       } else if (json.success) {
                           resolve(json);
                       } else if (json.error) {
-                          if (!json.count) {
+                          if (!json.count) { // If count exists, it might be partial success in batch
                               reject(new Error(json.error)); 
                           }
                       }
                   } catch (e) {
-                      logger.debug(`Batch stdout: ${trimmed}`);
+                      logger.debug(`${actualMode} stdout: ${trimmed}`);
                   }
               }
           });
 
           child.stderr.on('data', (data) => {
-              logger.warn(`Batch stderr: ${data}`);
+              // Moviepy writes progress to stderr, we might want to parse it if we didn't disable logger
+              // But we disabled logger in python script and print our own JSON progress
+              logger.warn(`${actualMode} stderr: ${data}`);
           });
 
           child.on('close', (code) => {

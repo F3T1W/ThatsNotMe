@@ -7,8 +7,9 @@ class TestModule {
     constructor() {
         this.container = document.getElementById('page-face-swap');
         this.selectedModelPath = null;
-        this.selectedInputFolder = null;
+        this.selectedInputPath = null; // Can be folder or file
         this.outputFolder = null;
+        this.mode = 'batch'; // 'batch' or 'video'
         this.init();
     }
 
@@ -38,6 +39,22 @@ class TestModule {
                             <h5 class="mb-0 text-white" data-i18n="test.title">Batch Face Swap</h5>
                         </div>
                         <div class="card-body">
+                            <!-- Mode Selection -->
+                            <div class="mb-4">
+                                <label class="form-label text-white" data-i18n="test.mode">Mode</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="swap-mode" id="mode-batch" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="mode-batch">
+                                        <i class="bi bi-images me-2"></i><span data-i18n="test.mode_photos">Photos (Batch)</span>
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="swap-mode" id="mode-video" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="mode-video">
+                                        <i class="bi bi-camera-video me-2"></i><span data-i18n="test.mode_video">Video</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <!-- Model Selector -->
                             <div class="mb-4">
                                 <label class="form-label text-white" data-i18n="swap.select_model">Select Model</label>
@@ -46,15 +63,15 @@ class TestModule {
                                 </select>
                             </div>
 
-                            <!-- Input Folder -->
+                            <!-- Input Selection -->
                             <div class="mb-4">
-                                <label class="form-label text-white" data-i18n="test.input_folder">Input Folder</label>
+                                <label class="form-label text-white" id="label-input-selection" data-i18n="test.input_folder">Input Folder</label>
                                 <div class="d-grid">
-                                    <button class="btn btn-outline-primary btn-lg" id="btn-select-input-folder">
-                                        <i class="bi bi-folder2-open me-2"></i> <span data-i18n="test.select_folder_btn">Select Folder with Photos</span>
+                                    <button class="btn btn-outline-primary btn-lg" id="btn-select-input">
+                                        <i class="bi bi-folder2-open me-2"></i> <span id="btn-select-text" data-i18n="test.select_folder_btn">Select Folder with Photos</span>
                                     </button>
                                 </div>
-                                <div class="form-text text-white-50 mt-1" id="input-folder-path" data-i18n="test.no_folder">No folder selected</div>
+                                <div class="form-text text-white-50 mt-1" id="input-path-display" data-i18n="test.no_selection">No selection</div>
                             </div>
                             
                             <!-- Enhancement Options -->
@@ -70,7 +87,7 @@ class TestModule {
                             <!-- Action -->
                             <div class="d-grid mt-4">
                                 <button class="btn btn-primary btn-lg py-3" id="btn-start-batch" disabled>
-                                    <i class="bi bi-play-circle-fill me-2"></i> <span data-i18n="test.start_batch">Start Batch Processing</span>
+                                    <i class="bi bi-play-circle-fill me-2"></i> <span id="btn-start-text" data-i18n="test.start_batch">Start Batch Processing</span>
                                 </button>
                             </div>
                             
@@ -101,11 +118,12 @@ class TestModule {
     }
 
     attachListeners() {
-        const selectBtn = document.getElementById('btn-select-input-folder');
+        const selectBtn = document.getElementById('btn-select-input');
         const startBtn = document.getElementById('btn-start-batch');
         const openBtn = document.getElementById('btn-open-output');
         const modelSelect = document.getElementById('test-model-select');
-        const enhanceCheck = document.getElementById('test-check-enhance');
+        const modeBatch = document.getElementById('mode-batch');
+        const modeVideo = document.getElementById('mode-video');
 
         if (selectBtn) {
             selectBtn.addEventListener('click', () => this.handleSelectInput());
@@ -121,6 +139,43 @@ class TestModule {
                 this.selectedModelPath = e.target.value;
                 this.updateStartButton();
             });
+        }
+        if (modeBatch) {
+            modeBatch.addEventListener('change', () => this.setMode('batch'));
+        }
+        if (modeVideo) {
+            modeVideo.addEventListener('change', () => this.setMode('video'));
+        }
+    }
+
+    setMode(mode) {
+        this.mode = mode;
+        this.selectedInputPath = null;
+        
+        const labelInput = document.getElementById('label-input-selection');
+        const btnText = document.getElementById('btn-select-text');
+        const pathDisplay = document.getElementById('input-path-display');
+        const startText = document.getElementById('btn-start-text');
+        
+        // Reset display
+        pathDisplay.textContent = i18n.t('test.no_selection');
+        pathDisplay.setAttribute('data-i18n', 'test.no_selection');
+        this.updateStartButton();
+
+        if (mode === 'batch') {
+            labelInput.textContent = i18n.t('test.input_folder');
+            labelInput.setAttribute('data-i18n', 'test.input_folder');
+            btnText.textContent = i18n.t('test.select_folder_btn');
+            btnText.setAttribute('data-i18n', 'test.select_folder_btn');
+            startText.textContent = i18n.t('test.start_batch');
+            startText.setAttribute('data-i18n', 'test.start_batch');
+        } else {
+            labelInput.textContent = i18n.t('test.input_video');
+            labelInput.setAttribute('data-i18n', 'test.input_video');
+            btnText.textContent = i18n.t('test.select_video_btn');
+            btnText.setAttribute('data-i18n', 'test.select_video_btn');
+            startText.textContent = i18n.t('test.start_video');
+            startText.setAttribute('data-i18n', 'test.start_video');
         }
     }
 
@@ -145,23 +200,29 @@ class TestModule {
 
     async handleSelectInput() {
         try {
-            const folderPath = await ipcRenderer.invoke('select-folder');
-            if (folderPath) {
-                this.selectedInputFolder = folderPath;
-                const pathEl = document.getElementById('input-folder-path');
-                pathEl.textContent = folderPath;
-                pathEl.removeAttribute('data-i18n'); // Remove i18n attribute to prevent overwrite
+            let path;
+            if (this.mode === 'batch') {
+                path = await ipcRenderer.invoke('select-folder');
+            } else {
+                path = await ipcRenderer.invoke('select-video-file');
+            }
+
+            if (path) {
+                this.selectedInputPath = path;
+                const pathEl = document.getElementById('input-path-display');
+                pathEl.textContent = path;
+                pathEl.removeAttribute('data-i18n');
                 this.updateStartButton();
             }
         } catch (error) {
-            logger.error('Error selecting input folder', error);
+            logger.error('Error selecting input', error);
         }
     }
 
     updateStartButton() {
         const btn = document.getElementById('btn-start-batch');
         if (btn) {
-            btn.disabled = !(this.selectedModelPath && this.selectedInputFolder);
+            btn.disabled = !(this.selectedModelPath && this.selectedInputPath);
         }
     }
 
@@ -179,15 +240,21 @@ class TestModule {
             
             const result = await ipcRenderer.invoke('start-batch-swap', {
                 modelPath: this.selectedModelPath,
-                inputDir: this.selectedInputFolder,
+                inputPath: this.selectedInputPath, // Renamed from inputDir
                 enhance: enhanceCheck ? enhanceCheck.checked : false,
-                upscale: 1 // Default to 1
+                upscale: 1,
+                mode: this.mode // Pass mode
             });
 
             if (result.success) {
-                this.outputFolder = result.output_dir;
+                this.outputFolder = this.mode === 'batch' ? result.output_dir : require('path').dirname(result.output_path);
                 openBtn.disabled = false;
-                notifications.show(i18n.t('test.success_msg').replace('{count}', result.count), 'success');
+                
+                const msg = this.mode === 'batch' 
+                    ? i18n.t('test.success_msg').replace('{count}', result.count)
+                    : i18n.t('test.video_success');
+                    
+                notifications.show(msg, 'success');
                 document.getElementById('batch-details').textContent = i18n.t('test.completed');
                 document.getElementById('batch-progress-bar').style.width = '100%';
                 document.getElementById('batch-progress-bar').classList.remove('progress-bar-animated');
@@ -196,7 +263,7 @@ class TestModule {
             }
 
         } catch (error) {
-            logger.error('Batch failed', error);
+            logger.error('Process failed', error);
             notifications.show(i18n.t('test.fail_msg').replace('{error}', error.message), 'danger');
             document.getElementById('batch-details').textContent = i18n.t('test.failed');
         } finally {

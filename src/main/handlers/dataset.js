@@ -111,6 +111,17 @@ function registerDatasetHandlers(ipcMain) {
     return result.filePaths[0];
   });
 
+  ipcMain.handle('select-video-file', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [{ name: 'Videos', extensions: ['mp4', 'mov', 'avi', 'mkv'] }]
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+        return null;
+    }
+    return result.filePaths[0];
+  });
+
   ipcMain.handle('open-folder', async (event, folderPath) => {
       const { shell } = require('electron');
       await shell.openPath(folderPath);
